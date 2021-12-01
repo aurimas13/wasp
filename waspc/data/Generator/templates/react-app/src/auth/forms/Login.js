@@ -18,7 +18,7 @@ const LoginForm = () => {
       history.push('{= onAuthSucceededRedirectTo =}')
     } catch (err) {
       console.log(err)
-      window.alert('Error:' + err.message)
+      window.alert(`Error: ${err.message} ${(err.data ? '\n' + JSON.stringify(err.data) : '')}`)
     }
   }
   
