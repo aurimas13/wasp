@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import login from '../login.js'
+import { showError } from '../../utils.js'
 
 const LoginForm = () => {
   const history = useHistory()
@@ -18,7 +19,7 @@ const LoginForm = () => {
       history.push('{= onAuthSucceededRedirectTo =}')
     } catch (err) {
       console.log(err)
-      window.alert(`Error: ${err.message} ${(err.data ? '\n' + JSON.stringify(err.data) : '')}`)
+      showError(err)
     }
   }
   
