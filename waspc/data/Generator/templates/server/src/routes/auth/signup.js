@@ -10,14 +10,21 @@ export default handleRejection(async (req, res) => {
 
   try {
     await prisma.{= userEntityLower =}.create({ data: userFields })
-    res.send()
   } catch(e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      throw new HttpError(422, 'Save failed', { prisma_error_code: e.code })
-    } else if (e instanceof AuthError) {
-      throw new HttpError(422, 'Validation failed', { entity: e.entityName, message: e.message })
+    if (e instanceof AuthError) {
+      throw new HttpError(422, 'Validation failed', { message: e.message })
+    } else if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      // Warn about unique constraint for email already existing
+      throw new HttpError(422, 'Save failed',
+        {
+          message: `A user with the same ${e.meta.target.join(', ')} already exists.`,
+          target: e.meta.target
+        })
+    } else {
+      // Do not add any extra Prisma error info for security sake
+      throw new HttpError(422, 'Save failed')
     }
-    throw new HttpError(500)
   }
 
+  res.send()
 })
