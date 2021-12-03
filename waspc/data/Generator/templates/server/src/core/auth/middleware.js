@@ -1,6 +1,6 @@
 {{={= =}=}}
 import { hashPassword } from '../auth.js'
-import EntityValidationError from '../EntityValidationError.js'
+import AuthError from '../AuthError.js'
 
 const EMAIL_FIELD = 'email'
 const PASSWORD_FIELD = 'password'
@@ -29,14 +29,14 @@ const validateUserData = (data, args, action) => {
     // If this validation must run, or it optionally can run and has the field
     if ((v.always_on && v.always_on.includes(action)) || data.hasOwnProperty(v.validates)) {
       if (!v.validator(data)) {
-        throw new EntityValidationError('{= userEntityUpper =}', v.message)
+        throw new AuthError(v.message)
       }
     }
   }
 }
 
 // Ensure strong plaintext password. Must come before hashing middleware.
-// Throws an EntityValidationError on the first validation that fails.
+// Throws an AuthError on the first validation that fails.
 const registerPasswordValidation = (prismaClient) => {
   prismaClient.$use(async (params, next) => {
     if (params.model === '{= userEntityUpper =}') {
