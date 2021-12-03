@@ -335,8 +335,8 @@ Check out this [section of our Todo app tutorial](/docs/tutorials/todo-app/auth#
 This method requires that `userEntity` specified in `auth` element contains `email: string` and `password: string` fields.
 
 We provide basic validations out of the box, which you can customize as shown below. Default validations are:
-- `email`: non-empty
-- `password`: non-empty, at least 8 characters, and contains a number 
+- `email`: non-empty (on `create` only)
+- `password`: non-empty (on `create` only), at least 8 characters, and contains a number 
 
 #### High-level API
 
@@ -372,17 +372,35 @@ export const signUp = async (args, context) => {
 You don't need to worry about hashing the password yourself! Even when you are using Prisma's client directly and calling `create()` with a plain-text password, Wasp put middleware in place that takes care of hashing it before storing it to the database. An additional middleware also performs field validation.
 :::
 
+##### Customizing user entity validations
+
 To disable default validations, or add your own, you can do:
 ```js
 const newUser = context.entities.User.create({
         data: { email: 'some@email.com', password: 'this will be hashed!' },
         _waspSkipDefaultValidations: true, // defaults to false
         _waspCustomValidations: [
-          { name: 'password should not be "password"', fn: data => data.password !== 'password' },
-          // More can be added below (note: it stops on first to return false)
+          {
+            validates: 'password',
+            message: 'password must be present',
+            validator: data => !!data.password,
+            always_on: ['create']
+          },
+          {
+            validates: 'password',
+            message: 'password must be at least 8 characters',
+            validator: data => data.password.length >= 8
+          },
+          // More can be added below (note: it stops on first validator to return false)
         ]
     })
 ```
+
+:::info
+By default, a given validation `v` will only run if `data.hasOwnProperty(v.validates)`.
+To force it to run for some action(s), add them to `always_on`. This is useful for presence checks we always want to run during `'create'`, for example, but we can optionally skip on `'update'` if the data is not present/being updated.
+`always_on` may contain one or more of the following: `'create'`, `'update'`, and `'updateMany'`
+:::
 
 #### Specification
 
