@@ -378,7 +378,7 @@ const newUser = context.entities.User.create({
         data: { email: 'some@email.com', password: 'this will be hashed!' },
         _waspSkipDefaultValidations: true, // defaults to false
         _waspCustomValidations: [
-          { name: 'password should not be password', fn: data => data.password !== 'password' },
+          { name: 'password should not be "password"', fn: data => data.password !== 'password' },
           // More can be added below (note: it stops on first to return false)
         ]
     })
