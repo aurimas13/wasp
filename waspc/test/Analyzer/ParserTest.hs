@@ -96,6 +96,29 @@ spec_Parser = do
               ]
       parse source `shouldBe` Right ast
 
+    it "Parses tuples" $ do
+      let source =
+            unlines
+              [ "test Pair (1, \"foo\")",
+                "test Long (1, \"foo\", 2, true)",
+                "test Unit ()",
+                "test TrailingComma (42,)"
+              ]
+      let ast =
+            AST
+              [ Decl "test" "Pair" $ Tuple [IntegerLiteral 1, StringLiteral "foo"],
+                Decl "test" "Long" $
+                  Tuple
+                    [ IntegerLiteral 1,
+                      StringLiteral "foo",
+                      IntegerLiteral 2,
+                      BoolLiteral True
+                    ],
+                Decl "test" "Unit" $ Tuple [],
+                Decl "test" "TrailingComma" $ Tuple [IntegerLiteral 42]
+              ]
+      parse source `shouldBe` Right ast
+
     it "Parses quoted PSL" $ do
       let source =
             unlines
