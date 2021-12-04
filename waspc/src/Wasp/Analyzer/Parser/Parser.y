@@ -100,7 +100,7 @@ ListVals :: { [Expr] }
   | ListVals ',' Expr { $1 ++ [$3] }
 
 -- We don't allow tuples shorter than 2 elements,
--- since they are not useful to + this way we avoid
+-- since they are not useful + this way we avoid
 -- ambiguity between tuple with single element and expression
 -- wrapped in parenthesis for purpose of grouping.
 Tuple :: { Expr }
