@@ -113,9 +113,17 @@ inferExprType (P.Dict entries) = do
     insertIfUniqueElseThrow m (key, value)
       | key `M.member` m = throw $ DictDuplicateField key
       | otherwise = return $ M.insert key value m
-inferExprType (P.Tuple values) = do
-  typedValues <- mapM inferExprType values
-  let tupleType = TupleType (exprType <$> typedValues)
+inferExprType (P.Tuple (value1, value2, restOfValues)) = do
+  typedValue1 <- inferExprType value1
+  typedValue2 <- inferExprType value2
+  typedRestOfValues <- mapM inferExprType restOfValues
+  let typedValues = (typedValue1, typedValue2, typedRestOfValues)
+  let tupleType =
+        TupleType
+          ( exprType typedValue1,
+            exprType typedValue2,
+            exprType <$> typedRestOfValues
+          )
   return $ Tuple typedValues tupleType
 
 -- | Finds the strongest common type for all of the given expressions, "common" meaning

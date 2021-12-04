@@ -18,7 +18,7 @@ data TypedStmt = Decl Identifier TypedExpr Type deriving (Eq, Show)
 data TypedExpr
   = Dict [(Identifier, TypedExpr)] Type
   | List [TypedExpr] Type
-  | Tuple [TypedExpr] Type
+  | Tuple (TypedExpr, TypedExpr, [TypedExpr]) Type
   | StringLiteral String
   | IntegerLiteral Integer
   | DoubleLiteral Double

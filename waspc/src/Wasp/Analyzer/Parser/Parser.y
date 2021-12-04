@@ -99,13 +99,16 @@ ListVals :: { [Expr] }
   : Expr { [$1] }
   | ListVals ',' Expr { $1 ++ [$3] }
 
+-- We don't allow tuples shorter than 2 elements,
+-- since they are not useful to + this way we avoid
+-- ambiguity between tuple with single element and expression
+-- wrapped in parenthesis for purpose of grouping.
 Tuple :: { Expr }
   : '(' TupleVals ')' { Tuple $2 }
   | '(' TupleVals ',' ')' { Tuple $2 }
-  |  '(' ')' { Tuple [] }
-TupleVals :: { [Expr] }
-  : Expr { [$1] }
-  | TupleVals ',' Expr { $1 ++ [$3] }
+TupleVals :: { (Expr, Expr, [Expr]) }
+  : Expr ',' Expr { ($1, $3, []) }
+  | TupleVals ',' Expr { (\(a, b, c) -> (a, b, c ++ [$3])) $1 }
 
 Extimport :: { Expr }
   : import Name from string { ExtImport $2 $4 }

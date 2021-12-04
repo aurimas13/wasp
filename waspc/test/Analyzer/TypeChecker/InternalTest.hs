@@ -161,9 +161,12 @@ spec_Internal = do
       describe "Type checks a tuple" $ do
         testSuccess
           "When tuple is a pair"
-          (P.Tuple [P.IntegerLiteral 5, P.StringLiteral "string"])
-          (TupleType [NumberType, StringType])
-        testSuccess "When tuple is a unit" (P.Tuple []) (TupleType [])
+          (P.Tuple (P.IntegerLiteral 5, P.StringLiteral "string", []))
+          (TupleType (NumberType, StringType, []))
+        testSuccess
+          "When tuple is a triple"
+          (P.Tuple (P.IntegerLiteral 5, P.StringLiteral "string", [P.IntegerLiteral 2]))
+          (TupleType (NumberType, StringType, [NumberType]))
 
     describe "checkStmt" $ do
       it "Type checks existing declaration type with correct argument" $ do

@@ -116,6 +116,20 @@ makeDeclType ''Custom
 
 --------------------------------
 
+------ Tuples ------
+data Tuples = Tuples
+  { pair :: (String, Integer),
+    triple :: (String, Integer, Integer),
+    quadruple :: (String, Integer, Integer, [Bool])
+  }
+  deriving (Eq, Show, Data)
+
+instance IsDecl Tuples
+
+makeDeclType ''Tuples
+
+--------------------
+
 eval :: TD.TypeDefinitions -> [String] -> Either EvaluationError [Decl]
 eval typeDefs source = evaluate typeDefs $ fromRight $ typeCheck typeDefs $ fromRight $ parse $ unlines source
 
@@ -172,7 +186,9 @@ spec_Evaluator = do
           `shouldBe` Right
             [ ( "Test",
                 Special
-                  [ExtImport (ExtImportField "field") "main.js", ExtImport (ExtImportModule "main") "main.js"]
+                  [ ExtImport (ExtImportField "field") "main.js",
+                    ExtImport (ExtImportModule "main") "main.js"
+                  ]
                   (JSON " \"key\": 1 ")
               )
             ]
@@ -182,3 +198,23 @@ spec_Evaluator = do
         let decls = eval typeDefs ["custom Test { version: \"1.2.3\" }"]
         fmap takeDecls decls
           `shouldBe` Right [("Test", Custom {version = SemanticVersion 1 2 3})]
+
+      it "Evaluates a declaration with fields that are tuples" $ do
+        let typeDefs = TD.addDeclType @Tuples $ TD.empty
+        let source =
+              [ "tuples Tuples {",
+                "  pair: (\"foo\", 1),",
+                "  triple: (\"foo\", 1, 2),",
+                "  quadruple: (\"foo\", 1, 2, [true, false])",
+                "}"
+              ]
+        fmap takeDecls (eval typeDefs source)
+          `shouldBe` Right
+            [ ( "Tuples",
+                Tuples
+                  { pair = ("foo", 1),
+                    triple = ("foo", 1, 2),
+                    quadruple = ("foo", 1, 2, [True, False])
+                  }
+              )
+            ]

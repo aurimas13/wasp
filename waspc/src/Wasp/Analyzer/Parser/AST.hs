@@ -17,7 +17,7 @@ data Stmt = Decl Identifier Identifier Expr deriving (Eq, Show)
 data Expr
   = Dict [(Identifier, Expr)]
   | List [Expr]
-  | Tuple [Expr]
+  | Tuple (Expr, Expr, [Expr])
   | StringLiteral String
   | IntegerLiteral Integer
   | DoubleLiteral Double
