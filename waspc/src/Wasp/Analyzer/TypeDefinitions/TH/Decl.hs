@@ -237,7 +237,6 @@ genWaspTypeAndEvaluationForHaskellType typ =
 
 waspTypeAndEvaluationForTuple :: WaspKind -> Q (WaspTypeExpQ, EvaluationExpQ)
 waspTypeAndEvaluationForTuple = \case
-  -- TODO: Consider reducing amount of code here by using TH.
   KTuple (t1, t2, []) -> do
     (wt1, e1) <- genWaspTypeAndEvaluationForHaskellType t1
     (wt2, e2) <- genWaspTypeAndEvaluationForHaskellType t2
