@@ -8,7 +8,6 @@ module Wasp.Analyzer.TypeDefinitions.TH.Decl
 where
 
 import Control.Applicative ((<|>))
-import Control.Monad (join)
 import qualified Data.HashMap.Strict as H
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (VarBangType)

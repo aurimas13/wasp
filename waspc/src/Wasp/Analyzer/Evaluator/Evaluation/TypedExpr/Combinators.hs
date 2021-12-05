@@ -88,8 +88,6 @@ list elemEvaluation = evaluation $ \(typeDefs, bindings) -> \case
       mapM (runEvaluation elemEvaluation typeDefs bindings) values
   expr -> Left $ EvaluationError.ExpectedListType $ TypedAST.exprType expr
 
--- TODO: Consider replacing this code with TH.
-
 -- | An evaluation that expects a "Tuple" with 2 elements (pair) and runs the
 -- corresponding evaluation on each element.
 tuple2 ::
