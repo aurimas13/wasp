@@ -377,25 +377,25 @@ You don't need to worry about hashing the password yourself! Even when you are u
 To disable default validations, or add your own, you can do:
 ```js
 const newUser = context.entities.User.create({
-    data: { email: 'some@email.com', password: 'this will be hashed!' },
-    _waspSkipDefaultValidations: true, // defaults to false
-    _waspCustomValidations: [
-      {
-        validates: 'password',
-        message: 'password must be present',
-        validator: password => !!password
-      },
-      {
-        validates: 'password',
-        message: 'password must be at least 8 characters',
-        validator: password => password.length >= 8
-      },
-    ]
+  data: { email: 'some@email.com', password: 'this will be hashed!' },
+  _waspSkipDefaultValidations: true, // defaults to false
+  _waspCustomValidations: [
+    {
+      validates: 'password',
+      message: 'password must be present',
+      validator: password => !!password
+    },
+    {
+      validates: 'password',
+      message: 'password must be at least 8 characters',
+      validator: password => password.length >= 8
+    },
+  ]
 })
 ```
 
 :::info
-Validations always run on create, but only when the `validates` field is present for updates. The validation process stops on the first `validator` to return false. If enabled, default validations run first and `validates` basic properties of both the `'email'` or `'password'` fields.
+Validations always run on `create()`, but only when the `validates` field is present for `update()`. The validation process stops on the first `validator` to return false. If enabled, default validations run first and validate basic properties of both the `'email'` or `'password'` fields.
 :::
 
 #### Specification
