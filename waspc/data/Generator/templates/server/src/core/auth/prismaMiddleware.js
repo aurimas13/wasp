@@ -5,7 +5,7 @@ import AuthError from '../AuthError.js'
 const EMAIL_FIELD = 'email'
 const PASSWORD_FIELD = 'password'
 
-// Ensure strong plaintext password. Must come before hashing middleware.
+// Ensure strong plaintext password.
 // Throws an AuthError on the first validation that fails.
 const registerUserEntityValidation = (prismaClient) => {
   prismaClient.$use(async (params, next) => {
@@ -51,6 +51,7 @@ const registerPasswordHashing = (prismaClient) => {
 }
 
 export const registerAuthMiddleware = (prismaClient) => {
+  // registerUserEntityValidation must come before registerPasswordHashing
   registerUserEntityValidation(prismaClient)
   registerPasswordHashing(prismaClient)
 }
