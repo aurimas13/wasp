@@ -1,13 +1,16 @@
 module Wasp.Generator.DbGenerator
   ( genDb,
+    preCleanup,
     dbRootDirInProjectRootDir,
     dbSchemaFileInProjectRootDir,
   )
 where
 
 import Data.Aeson (object, (.=))
-import StrongPath (Dir, File', Path', Rel, reldir, relfile, (</>))
+import StrongPath (Abs, Dir, File', Path', Rel, reldir, relfile, (</>))
 import qualified StrongPath as SP
+import System.Directory (doesDirectoryExist, removeDirectoryRecursive)
+import Wasp.Common (WaspProjectDir)
 import Wasp.CompileOptions (CompileOptions)
 import Wasp.Generator.Common (ProjectRootDir)
 import Wasp.Generator.FileDraft (FileDraft, createTemplateFileDraft)
@@ -26,6 +29,8 @@ data DbRootDir
 
 data DbTemplatesDir
 
+data DbMigrationsDir
+
 dbRootDirInProjectRootDir :: Path' (Rel ProjectRootDir) (Dir DbRootDir)
 dbRootDirInProjectRootDir = [reldir|db|]
 
@@ -43,12 +48,32 @@ dbSchemaFileInDbRootDir = SP.castRel dbSchemaFileInDbTemplatesDir
 dbSchemaFileInProjectRootDir :: Path' (Rel ProjectRootDir) File'
 dbSchemaFileInProjectRootDir = dbRootDirInProjectRootDir </> dbSchemaFileInDbRootDir
 
+dbMigrationsDirInDbRootDir :: Path' (Rel DbRootDir) (Dir DbMigrationsDir)
+dbMigrationsDirInDbRootDir = [reldir|migrations|]
+
+dbMigrationsDirInWaspProjectDir :: Path' (Rel WaspProjectDir) (Dir DbMigrationsDir)
+dbMigrationsDirInWaspProjectDir = [reldir|migrations|]
+
 -- * Db generator
 
 genDb :: Wasp -> CompileOptions -> [FileDraft]
 genDb wasp _ =
   [ genPrismaSchema wasp
   ]
+
+preCleanup :: Wasp -> Path' Abs (Dir WaspProjectDir) -> Path' Abs (Dir ProjectRootDir) -> CompileOptions -> IO ()
+preCleanup _ waspDir outDir _ = do
+  doesWaspMigrationsDirExist <- doesDirectoryExist waspMigrationsDirAbsFilePath
+  doesOutMigrationsDirExist <- doesDirectoryExist outMigrationsDirAbsFilePath
+  case (doesWaspMigrationsDirExist, doesOutMigrationsDirExist) of
+    (False, True) -> do
+      putStrLn "migrations dir does not exist in Wasp project dir but does in generated output dir"
+      putStrLn $ "removing dir: " ++ outMigrationsDirAbsFilePath
+      removeDirectoryRecursive outMigrationsDirAbsFilePath
+    _ -> return ()
+  where
+    waspMigrationsDirAbsFilePath = SP.fromAbsDir $ waspDir </> dbMigrationsDirInWaspProjectDir
+    outMigrationsDirAbsFilePath = SP.fromAbsDir $ outDir </> dbRootDirInProjectRootDir </> dbMigrationsDirInDbRootDir
 
 genPrismaSchema :: Wasp -> FileDraft
 genPrismaSchema wasp = createTemplateFileDraft dstPath tmplSrcPath (Just templateData)

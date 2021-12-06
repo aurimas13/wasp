@@ -46,7 +46,7 @@ compile waspDir outDir options = do
             )
             >>= generateCode
   where
-    generateCode wasp = Generator.writeWebAppCode wasp outDir options >> return (Right ())
+    generateCode wasp = Generator.writeWebAppCode wasp waspDir outDir options >> return (Right ())
 
 enrichWaspASTBasedOnCompileOptions :: Wasp -> CompileOptions -> IO Wasp
 enrichWaspASTBasedOnCompileOptions wasp options = do

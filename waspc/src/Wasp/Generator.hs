@@ -12,9 +12,11 @@ import qualified Data.Version
 import qualified Paths_waspc
 import StrongPath (Abs, Dir, Path', relfile, (</>))
 import qualified StrongPath as SP
+import Wasp.Common (WaspProjectDir)
 import Wasp.CompileOptions (CompileOptions)
 import Wasp.Generator.Common (ProjectRootDir)
 import Wasp.Generator.DbGenerator (genDb)
+import qualified Wasp.Generator.DbGenerator as DbGenerator
 import Wasp.Generator.DockerGenerator (genDockerFiles)
 import Wasp.Generator.FileDraft (FileDraft, write)
 import Wasp.Generator.ServerGenerator (genServer)
@@ -29,9 +31,10 @@ import Wasp.Wasp (Wasp)
 --   NOTE(martin): What if there is already smth in the dstDir? It is probably best
 --     if we clean it up first? But we don't want this to end up with us deleting stuff
 --     from user's machine. Maybe we just overwrite and we are good?
-writeWebAppCode :: Wasp -> Path' Abs (Dir ProjectRootDir) -> CompileOptions -> IO ()
-writeWebAppCode wasp dstDir compileOptions = do
+writeWebAppCode :: Wasp -> Path' Abs (Dir WaspProjectDir) -> Path' Abs (Dir ProjectRootDir) -> CompileOptions -> IO ()
+writeWebAppCode wasp waspDir dstDir compileOptions = do
   writeFileDrafts dstDir (generateWebApp wasp compileOptions)
+  DbGenerator.preCleanup wasp waspDir dstDir compileOptions
   ServerGenerator.preCleanup wasp dstDir compileOptions
   writeFileDrafts dstDir (genServer wasp compileOptions)
   writeFileDrafts dstDir (genDb wasp compileOptions)
