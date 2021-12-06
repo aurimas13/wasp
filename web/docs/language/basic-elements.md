@@ -335,8 +335,8 @@ Check out this [section of our Todo app tutorial](/docs/tutorials/todo-app/auth#
 This method requires that `userEntity` specified in `auth` element contains `email: string` and `password: string` fields.
 
 We provide basic validations out of the box, which you can customize as shown below. Default validations are:
-- `email`: non-empty (on `create` only)
-- `password`: non-empty (on `create` only), at least 8 characters, and contains a number 
+- `email`: non-empty
+- `password`: non-empty, at least 8 characters, and contains a number 
 
 #### High-level API
 
@@ -383,23 +383,19 @@ const newUser = context.entities.User.create({
           {
             validates: 'password',
             message: 'password must be present',
-            validator: data => !!data.password,
-            always_on: ['create']
+            validator: password => !!password
           },
           {
             validates: 'password',
             message: 'password must be at least 8 characters',
-            validator: data => data.password.length >= 8
+            validator: password => password.length >= 8
           },
-          // More can be added below (note: it stops on first validator to return false)
         ]
     })
 ```
 
 :::info
-By default, a given validation `v` will only run if `data.hasOwnProperty(v.validates)`.
-To force it to run for some action(s), add them to `always_on`. This is useful for presence checks we always want to run during `'create'`, for example, but we can optionally skip on `'update'` if the data is not present/being updated.
-`always_on` may contain one or more of the following: `'create'`, `'update'`, and `'updateMany'`
+Validations always run on create, but only when the `validates` field is present for updates. The validation process stops on the first `validator` to return false. If enabled, default validations run first and `validates` basic properties of both the `'email'` or `'password'` fields.
 :::
 
 #### Specification

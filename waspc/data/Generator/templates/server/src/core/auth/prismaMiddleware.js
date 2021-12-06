@@ -5,39 +5,9 @@ import AuthError from '../AuthError.js'
 const EMAIL_FIELD = 'email'
 const PASSWORD_FIELD = 'password'
 
-const validateUserData = (data, args, action) => {
-  data = data || {}
-
-  // By default, a given validation v will only run if data.hasOwnProperty(v.validates)
-  // To force it to run for some action(s), add them to always_on. This is useful for
-  // presence checks we always want to run during 'create', for example, but we can optionally
-  // skip on 'update' if the data is not present/being updated.
-  // always_on may contain one or more of the following: 'create', 'update', and 'updateMany'
-  const defaultValidations = [
-    { validates: EMAIL_FIELD, message: 'email must be present', validator: data => !!data.email, always_on: ['create'] },
-    { validates: PASSWORD_FIELD, message: 'password must be present', validator: data => !!data.password, always_on: ['create'] },
-    { validates: PASSWORD_FIELD, message: 'password must be at least 8 characters', validator: data => data.password.length >= 8 },
-    { validates: PASSWORD_FIELD, message: 'password must contain a number', validator: data => /\d/.test(data.password) },
-  ]
-
-  const validations = [
-    ...(args._waspSkipDefaultValidations ? [] : defaultValidations),
-    ...(args._waspCustomValidations || [])
-  ]
-
-  for (const v of validations) {
-    // If this validation must run, or it optionally can run and has the field
-    if ((v.always_on && v.always_on.includes(action)) || data.hasOwnProperty(v.validates)) {
-      if (!v.validator(data)) {
-        throw new AuthError(v.message)
-      }
-    }
-  }
-}
-
 // Ensure strong plaintext password. Must come before hashing middleware.
 // Throws an AuthError on the first validation that fails.
-const registerPasswordValidation = (prismaClient) => {
+const registerUserEntityValidation = (prismaClient) => {
   prismaClient.$use(async (params, next) => {
     if (params.model === '{= userEntityUpper =}') {
       if (['create', 'update', 'updateMany'].includes(params.action)) {
@@ -81,6 +51,31 @@ const registerPasswordHashing = (prismaClient) => {
 }
 
 export const registerAuthMiddleware = (prismaClient) => {
-  registerPasswordValidation(prismaClient)
+  registerUserEntityValidation(prismaClient)
   registerPasswordHashing(prismaClient)
+}
+
+const validateUserData = (data, args, action) => {
+  data = data || {}
+
+  const defaultValidations = [
+    { validates: EMAIL_FIELD, message: 'email must be present', validator: email => !!email },
+    { validates: PASSWORD_FIELD, message: 'password must be present', validator: password => !!password },
+    { validates: PASSWORD_FIELD, message: 'password must be at least 8 characters', validator: password => password.length >= 8 },
+    { validates: PASSWORD_FIELD, message: 'password must contain a number', validator: password => /\d/.test(password) },
+  ]
+
+  const validations = [
+    ...(args._waspSkipDefaultValidations ? [] : defaultValidations),
+    ...(args._waspCustomValidations || [])
+  ]
+
+  // Validations always run on create, but only when the field is present for updates
+  for (const v of validations) {
+    if (action === 'create' || data.hasOwnProperty(v.validates)) {
+      if (!v.validator(data[v.validates])) {
+        throw new AuthError(v.message)
+      }
+    }
+  }
 }

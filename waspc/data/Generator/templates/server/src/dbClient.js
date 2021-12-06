@@ -1,7 +1,11 @@
 {{={= =}=}}
 import Prisma from '@prisma/client'
 
-import { registerAuthMiddleware } from './core/auth/middleware.js'
+{=# isAuthEnabled =}
+
+import { registerAuthMiddleware } from './core/auth/prismaMiddleware.js'
+
+{=/ isAuthEnabled =}
 
 const createDbClient = () => {
   const prismaClient = new Prisma.PrismaClient()
